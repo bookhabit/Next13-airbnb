@@ -1,5 +1,6 @@
 'use client'
 
+import {signIn} from "next-auth/react"
 import axios from "axios";
 import { AiFillGithub } from "react-icons/ai";
 import {FcGoogle} from "react-icons/fc"
@@ -11,19 +12,22 @@ import {
 } from "react-hook-form";
 
 import useRegisterModal from "@/app/hooks/useRegisterModal";
+import useLoginModal from "@/app/hooks/useLoginModal";
 import Modal from "./Modal";
 import Heading from "../Heading";
 import Input from "../Input";
 import { toast } from "react-hot-toast";
 import Button from "../Button";
+import { useRouter } from "next/navigation";
 
 const RegisterModal = () => {
     const registerModal = useRegisterModal();
+    const loginModal = useLoginModal();
     const [isLoading,setIsLoading] = useState(false)
+    const router = useRouter()
 
     const { register, handleSubmit,formState: { errors},} = useForm<FieldValues>({
         defaultValues: {
-          name: '',
           email: '',
           password: ''
         },
@@ -32,17 +36,28 @@ const RegisterModal = () => {
       const onSubmit:SubmitHandler<FieldValues> = (data)=>{
         setIsLoading(true);
 
-        axios.post('/api/register',data)
-            .then(()=>{
-                registerModal.onClose();
-            })
-            .catch((error)=>{
-                toast.error('에러 발생');
-            })
-            .finally(()=>{
-                setIsLoading(false);
-            })
+        signIn('credentials',{
+          ...data,
+          redirect:false
+        })
+        .then((callback)=>{
+          setIsLoading(false);
+
+          if(callback?.ok){
+            toast.success('Logged in')
+            router.refresh();
+          }
+
+          if(callback?.error){
+            toast.error(callback.error)
+          }
+        })
       }
+
+      const onToggle = useCallback(() => {
+        registerModal.onClose();
+        loginModal.onOpen();
+      }, [loginModal, registerModal])
 
        const bodyContent = (
             <div className="flex flex-col gap-4">
@@ -103,7 +118,7 @@ const RegisterModal = () => {
               >
                 <p>Already have an account?
                   <span 
-                    onClick={registerModal.onClose} 
+                    onClick={onToggle} 
                     className="
                       text-neutral-800
                       cursor-pointer 
@@ -120,7 +135,7 @@ const RegisterModal = () => {
                 disabled={isLoading}
                 isOpen={registerModal.isOpen}
                 title="Register"
-                actionLabel="Continue"
+                actionLabel="Register"
                 onClose={registerModal.onClose}
                 onSubmit={handleSubmit(onSubmit)}
                 body={bodyContent}
