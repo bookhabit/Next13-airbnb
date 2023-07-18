@@ -42,7 +42,7 @@ const LoginModal = () => {
   const onSubmit: SubmitHandler<FieldValues> = 
   (data) => {
     setIsLoading(true);
-
+    
     signIn('credentials', { 
       ...data, 
       redirect: false,
@@ -59,7 +59,10 @@ const LoginModal = () => {
       if (callback?.error) {
         toast.error(callback.error);
       }
-    });
+    })
+    .catch((err)=>{
+      console.log(err)
+    })
   }
 
   const onToggle = useCallback(() => {

@@ -102,7 +102,7 @@ const Categories = () => {
     const category = params?.get('category');
     const pathname = usePathname();
     const isMainPage = pathname === '/';
-  console.log(category)
+
     if (!isMainPage) {
       return null;
     }

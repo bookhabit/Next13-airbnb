@@ -28,29 +28,26 @@ const RegisterModal = () => {
 
     const { register, handleSubmit,formState: { errors},} = useForm<FieldValues>({
         defaultValues: {
+          name: '',
           email: '',
           password: ''
         },
       });
 
-      const onSubmit:SubmitHandler<FieldValues> = (data)=>{
+      const onSubmit: SubmitHandler<FieldValues> = (data) => {
         setIsLoading(true);
-
-        signIn('credentials',{
-          ...data,
-          redirect:false
+    
+        axios.post('/api/register', data)
+        .then(() => {
+          toast.success('Registered!');
+          registerModal.onClose();
+          loginModal.onOpen();
         })
-        .then((callback)=>{
+        .catch((error) => {
+          toast.error(error);
+        })
+        .finally(() => {
           setIsLoading(false);
-
-          if(callback?.ok){
-            toast.success('Logged in')
-            router.refresh();
-          }
-
-          if(callback?.error){
-            toast.error(callback.error)
-          }
         })
       }
 

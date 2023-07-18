@@ -28,7 +28,7 @@ export const authOptions:AuthOptions = {
             async authorize(credentials){
                 // credentials를 사용하여 사용자 인증을 처리하는 함수를 정의합니다.
                 if(!credentials?.email||!credentials?.password){
-                    throw new Error('Invalid credentials');
+                    throw new Error('사용자 정보가 없습니다');
                 }
                 const user = await prisma.user.findUnique({
                     where:{
@@ -37,13 +37,13 @@ export const authOptions:AuthOptions = {
                 })
 
                 if(!user || !user?.hashedPassword){
-                    throw new Error('Invalid credentials');
+                    throw new Error('사용자 또는 사용자의 비밀번호가 없습니다');
                 }
 
                 const isCorrectPassword = await bcrypt.compare(credentials.password,user.hashedPassword)
 
                 if(!isCorrectPassword){
-                    throw new Error('Invalid credentials');
+                    throw new Error('비밀번호가 일치하지 않습니다다');
                 }
 
                 return user;
